@@ -4,32 +4,25 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.util.Patterns
+import android.widget.EditText
 import com.example.multiplevalidations.extension.*
 
-class ValidationWatcher : TextWatcher {
+class ValidationWatcher(private val edt: EditText) : TextWatcher {
     private var cleanText = ""
     private var textMasked = ""
-    var shouldEdit = false
-    var setText: (String) -> Unit = {}
 
     override fun beforeTextChanged(text: CharSequence?, start: Int, count: Int, after: Int) {}
 
     override fun afterTextChanged(text: Editable?) {
-//        shouldEdit = true
+        edt.removeTextChangedListener(this)
+        text?.replace(0, text.length, textMasked)
+        edt.addTextChangedListener(this)
     }
 
     override fun onTextChanged(cs: CharSequence?, start: Int, before: Int, count: Int) {
         val text = cs.toString().removeAllFormatting()
         cleanText = text
-
-//        Log.d("LOG", " ")
-//        if (shouldEdit) {
-//            Log.d("LOG", "shouldEdit")
-            handlingValidation(text)
-//        } else {
-//            Log.d("LOG", "!shouldEdit")
-//            return
-//        }
+        handlingValidation(text)
     }
 
     private fun handlingValidation(text: String) {
@@ -114,14 +107,10 @@ class ValidationWatcher : TextWatcher {
         Log.d("LOG", "CHAVE INVALIDA")
         cleanText = cleanText.removeAllFormatting()
         textMasked = cleanText
-        setText.invoke(textMasked)
-        return
     }
 
     private fun setMask(text: String) {
         Log.d("LOG", "setMask: $text")
         textMasked = text
-        setText.invoke(textMasked)
-        return
     }
 }

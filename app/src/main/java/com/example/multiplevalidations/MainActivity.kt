@@ -11,14 +11,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         super.setContentView(binding.root)
 
-        val watcher = ValidationWatcher()
-        binding.edtField.addTextChangedListener(watcher)
-        watcher.setText = {
-            binding.edtField.post {
-//                binding.edtField.setText(it)
-//                binding.edtField.setSelection(it.length)
-//                watcher.shouldEdit = false
-            }
-        }
+        binding.edtField.addTextChangedListener(ValidationWatcher(binding.edtField))
     }
 }

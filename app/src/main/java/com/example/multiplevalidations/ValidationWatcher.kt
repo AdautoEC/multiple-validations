@@ -9,19 +9,32 @@ import com.example.multiplevalidations.extension.*
 class ValidationWatcher : TextWatcher {
     private var cleanText = ""
     private var textMasked = ""
+    var shouldEdit = false
     var setText: (String) -> Unit = {}
 
     override fun beforeTextChanged(text: CharSequence?, start: Int, count: Int, after: Int) {}
 
     override fun afterTextChanged(text: Editable?) {
-        setText.invoke(textMasked)
+//        shouldEdit = true
     }
 
-    override fun onTextChanged(text: CharSequence?, start: Int, before: Int, count: Int) {
-        cleanText = text?.toString()?.removeAllFormatting() ?: ""
+    override fun onTextChanged(cs: CharSequence?, start: Int, before: Int, count: Int) {
+        val text = cs.toString().removeAllFormatting()
+        cleanText = text
 
+//        Log.d("LOG", " ")
+//        if (shouldEdit) {
+//            Log.d("LOG", "shouldEdit")
+            handlingValidation(text)
+//        } else {
+//            Log.d("LOG", "!shouldEdit")
+//            return
+//        }
+    }
+
+    private fun handlingValidation(text: String) {
         when {
-            Patterns.EMAIL_ADDRESS.matcher(text.toString()).matches() -> {
+            Patterns.EMAIL_ADDRESS.matcher(text).matches() -> {
                 //  EMAIL VALIDO
                 emailValidation(text)
             }
@@ -62,9 +75,9 @@ class ValidationWatcher : TextWatcher {
         }
     }
 
-    private fun emailValidation(text: CharSequence?) {
+    private fun emailValidation(text: String) {
         Log.d("LOG", "EMAIL")
-        if (text.toString().isValidEmail()) {
+        if (text.isValidEmail()) {
             Log.d("LOG", "EMAIL VALIDO")
         } else {
             Log.d("LOG", "EMAIL INVALIDO")
@@ -88,7 +101,7 @@ class ValidationWatcher : TextWatcher {
         setMask(cleanText.toPhoneMask())
     }
 
-    private fun chaveAleatoriaValidation(text: CharSequence?) {
+    private fun chaveAleatoriaValidation(text: String?) {
         if (text.toString().isValidChaveAleatoria()) {
             setMask(cleanText)
         } else {
@@ -101,10 +114,14 @@ class ValidationWatcher : TextWatcher {
         Log.d("LOG", "CHAVE INVALIDA")
         cleanText = cleanText.removeAllFormatting()
         textMasked = cleanText
+        setText.invoke(textMasked)
+        return
     }
 
     private fun setMask(text: String) {
         Log.d("LOG", "setMask: $text")
         textMasked = text
+        setText.invoke(textMasked)
+        return
     }
 }

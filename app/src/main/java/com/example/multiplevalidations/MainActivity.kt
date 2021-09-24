@@ -14,9 +14,11 @@ class MainActivity : AppCompatActivity() {
         val watcher = ValidationWatcher()
         binding.edtField.addTextChangedListener(watcher)
         watcher.setText = {
-            binding.edtField.setText(it)
-            binding.edtField.setSelection(it.length)
-            binding.edtField.clearFocus()
+            binding.edtField.post {
+//                binding.edtField.setText(it)
+//                binding.edtField.setSelection(it.length)
+//                watcher.shouldEdit = false
+            }
         }
     }
 }

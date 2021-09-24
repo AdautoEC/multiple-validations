@@ -11,6 +11,12 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         super.setContentView(binding.root)
 
-        binding.edtField.addTextChangedListener(ValidationWatcher(binding.edtField))
+        val watcher = ValidationWatcher()
+        binding.edtField.addTextChangedListener(watcher)
+        watcher.setText = {
+            binding.edtField.setText(it)
+            binding.edtField.setSelection(it.length)
+            binding.edtField.clearFocus()
+        }
     }
 }

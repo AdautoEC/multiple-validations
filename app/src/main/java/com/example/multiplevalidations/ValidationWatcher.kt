@@ -3,88 +3,108 @@ package com.example.multiplevalidations
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.widget.EditText
-import com.example.multiplevalidations.mask.CNPJMask
-import com.example.multiplevalidations.mask.CPFMask
-import com.example.multiplevalidations.mask.PhoneMask
+import android.util.Patterns
+import com.example.multiplevalidations.extension.*
 
-class ValidationWatcher(private val edt: EditText) : TextWatcher {
-    /*
-        * CELULAR(DDD + DDI) = 11
-        * CPF = 11
-        * CNPJ = 14
-        * EMAIL= @
-        * CHAVE ALEATORIA = ?
-    */
-    private var finalText = ""
-    override fun beforeTextChanged(text: CharSequence?, start: Int, count: Int, after: Int) {
+class ValidationWatcher : TextWatcher {
+    private var cleanText = ""
+    private var textMasked = ""
+    var setText: (String) -> Unit = {}
 
+    override fun beforeTextChanged(text: CharSequence?, start: Int, count: Int, after: Int) {}
+
+    override fun afterTextChanged(text: Editable?) {
+        setText.invoke(textMasked)
     }
 
     override fun onTextChanged(text: CharSequence?, start: Int, before: Int, count: Int) {
-        if (hasOnlyNumbers(getOnlyNumbers(text.toString()))) {
-            Log.d("LOG", "[IF] hasOnlyNumbers: ${getOnlyNumbers(text.toString())}")
-            when (text?.length) {
-                11 -> {
-                    //  CPF ou CELULAR
-                    if (text.startsWith("+55")) {
-                        //  CELULAR
-                        Log.d("LOG", "CELULAR")
-                        finalText = getOnlyNumbers(finalText)
-                        finalText = PhoneMask.mask(text.toString())
-                        edt.setText(finalText)
-                        return
-                    } else {
-                        //  CPF
-                        finalText = getOnlyNumbers(finalText)
-                        finalText = CPFMask.mask(text.toString())
-                        edt.setText(finalText)
-                        return
+        cleanText = text?.toString()?.removeAllFormatting() ?: ""
+
+        when {
+            Patterns.EMAIL_ADDRESS.matcher(text.toString()).matches() -> {
+                //  EMAIL VALIDO
+                emailValidation(text)
+            }
+            cleanText.length == 11 && cleanText.hasOnlyNumbers() -> {
+                //  CPF ou CELULAR
+                when {
+                    cleanText.isValidCPF() -> {
+                        //  CPF VALIDO
+                        cpfValidation()
+                    }
+                    cleanText.isValidPhone() -> {
+                        //  CELULAR VALIDO
+                        phoneValidation()
+                    }
+                    else -> {
+                        //  CPF E CELULAR INVALIDOS
+                        Log.d("LOG", "NEM CPF | NEM CPNJ")
                     }
                 }
-                14 -> {
+            }
+            cleanText.length == 14 && cleanText.hasOnlyNumbers() -> {
+                if (cleanText.isValidCNPJ()) {
                     //  CNPJ
-                    Log.d("LOG", "CNPJ")
-                    finalText = getOnlyNumbers(finalText)
-                    finalText = CNPJMask.mask(text.toString())
-                    return
-                }
-                else -> {
-                    //  CHAVE ALEATORIA
-                    Log.d("LOG", "CHAVE ALEATORIA")
-//                    PhoneMask.unmask(text.toString(), true)
-//                    CPFMask.unmask(text.toString())
-//                    CNPJMask.unmask(text.toString())
-//                    return
-                    finalText = text.toString()
-//                    Log.d("LOG", "[IF] finalText: $finalText")
-                    return
+                    cnpjValidation()
+                } else {
+                    //  "CNPJ INVALIDO"
+                    Log.d("LOG", "CNPJ INVALIDO")
                 }
             }
-        } else {
-            Log.d("LOG", "[ELSE] hasOnlyNumbers: ${text.toString()}")
-            finalText = text.toString()
+            cleanText.length == 32 -> {
+                //  CHAVE ALEATORIA
+                chaveAleatoriaValidation(text)
+            }
+            else -> {
+                //  "CHAVE INVALIDA"
+                chaveInvalidaValidation()
+            }
         }
-        //edt.setText(finalText)
     }
 
-    override fun afterTextChanged(text: Editable?) {
+    private fun emailValidation(text: CharSequence?) {
+        Log.d("LOG", "EMAIL")
+        if (text.toString().isValidEmail()) {
+            Log.d("LOG", "EMAIL VALIDO")
+        } else {
+            Log.d("LOG", "EMAIL INVALIDO")
+        }
     }
 
-    fun getOnlyNumbers(str: String): String {
-        val textUnmasked = str.replace("[.]".toRegex(), "")
-            .replace("[-]".toRegex(), "")
-            .replace("[/]".toRegex(), "")
-            .replace("[(]".toRegex(), "")
-            .replace("[ ]".toRegex(), "")
-            .replace("[+]".toRegex(), "")
-            .replace("[)]".toRegex(), "")
-        return textUnmasked
+    private fun cpfValidation() {
+        Log.d("LOG", "CPF")
+        if (cleanText.isCPF()) {
+            setMask(cleanText.toCPFMask())
+        } else {
+            Log.d("LOG", "CPF INVALIDO")
+        }
     }
 
-    fun hasOnlyNumbers(str: String): Boolean {
-        val textUnmasked = getOnlyNumbers(str)
-        return textUnmasked.all { it in '0'..'9' }
+    private fun cnpjValidation() {
+        setMask(cleanText.toCNPJMask())
     }
 
+    private fun phoneValidation() {
+        setMask(cleanText.toPhoneMask())
+    }
+
+    private fun chaveAleatoriaValidation(text: CharSequence?) {
+        if (text.toString().isValidChaveAleatoria()) {
+            setMask(cleanText)
+        } else {
+            //  "Chave aleatória invalida"
+            Log.d("LOG", "CHAVE ALEATORIA INVALIDA")
+        }
+    }
+
+    private fun chaveInvalidaValidation() {
+        Log.d("LOG", "CHAVE INVALIDA")
+        cleanText = cleanText.removeAllFormatting()
+        textMasked = cleanText
+    }
+
+    private fun setMask(text: String) {
+        Log.d("LOG", "setMask: $text")
+        textMasked = text
+    }
 }

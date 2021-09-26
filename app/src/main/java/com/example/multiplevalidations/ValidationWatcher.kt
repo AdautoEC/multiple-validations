@@ -26,6 +26,7 @@ class ValidationWatcher(private val edt: EditText) : TextWatcher {
     }
 
     private fun handlingValidation(text: String) {
+
         when {
             Patterns.EMAIL_ADDRESS.matcher(text).matches() -> {
                 //  EMAIL VALIDO
@@ -38,13 +39,14 @@ class ValidationWatcher(private val edt: EditText) : TextWatcher {
                         //  CPF VALIDO
                         cpfValidation()
                     }
-                    cleanText.isValidPhone() -> {
+                    cleanText.isValidCellphone() -> {
                         //  CELULAR VALIDO
                         phoneValidation()
                     }
                     else -> {
                         //  CPF E CELULAR INVALIDOS
-                        Log.d("LOG", "NEM CPF | NEM CPNJ")
+                        Log.d("LOG", "CPF E CELULAR INVALIDOS")
+                        chaveInvalidaValidation()
                     }
                 }
             }
@@ -70,20 +72,12 @@ class ValidationWatcher(private val edt: EditText) : TextWatcher {
 
     private fun emailValidation(text: String) {
         Log.d("LOG", "EMAIL")
-        if (text.isValidEmail()) {
-            Log.d("LOG", "EMAIL VALIDO")
-        } else {
-            Log.d("LOG", "EMAIL INVALIDO")
-        }
+        Log.d("LOG", "EMAIL VALIDO")
     }
 
     private fun cpfValidation() {
         Log.d("LOG", "CPF")
-        if (cleanText.isCPF()) {
-            setMask(cleanText.toCPFMask())
-        } else {
-            Log.d("LOG", "CPF INVALIDO")
-        }
+        setMask(cleanText.toCPFMask())
     }
 
     private fun cnpjValidation() {

@@ -4,18 +4,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#0088CA"
     tools:context=".MainActivity">
 
-    <EditText
+    <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/edtField"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="32dp"
-        android:hint="Insira o texto aqui"
         android:layout_marginBottom="32dp"
+        android:background="#F5F5F5"
+        android:gravity="center"
+        android:padding="16dp"
         android:text=""
+        android:textColor="@color/black"
+        android:textSize="22sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

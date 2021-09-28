@@ -8,7 +8,7 @@ import com.example.multiplevalidations.extension.*
 
 class ValidationWatcher(
     private val edt: EditText,
-    private val onKeyChoosed: (Pair<String?, PIXKey?>) -> Unit
+    private val onKeyChoosed: (Pair<String, PIXKey>) -> Unit
 ) : TextWatcher {
     private var cleanText = ""
     private var textMasked = ""

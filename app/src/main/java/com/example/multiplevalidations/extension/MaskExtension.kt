@@ -4,7 +4,6 @@ import android.util.Log
 import java.lang.StringBuilder
 
 fun String.toCPFMask(): String {
-    Log.d("LOG", "CPF[inicio]: $this")
     val cpf: String = this
     val builder = StringBuilder()
     return try {
@@ -15,7 +14,6 @@ fun String.toCPFMask(): String {
         builder.append(this.substring(6, 9))
         builder.append("-")
         builder.append(this.substring(9, 11))
-        Log.d("LOG", "CPF[fim]: $builder")
         builder.toString()
     } catch (e: Exception) {
         cpf

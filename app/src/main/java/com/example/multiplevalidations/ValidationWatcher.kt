@@ -13,7 +13,6 @@ class ValidationWatcher(
     private var textMasked = ""
     var onKeyChoosed: ((Pair<String, PIXKey>) -> Unit)? = null
     var oldKey: PIXKey = PIXKey.CHAVE_INVALIDA
-    var selection: Int = 0
 
     override fun beforeTextChanged(text: CharSequence?, start: Int, count: Int, after: Int) {
     }

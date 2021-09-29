@@ -67,6 +67,6 @@ fun String.isValidCellphone(): Boolean {
 }
 
 fun String.isValidChaveAleatoria(): Boolean {
-    val chaveAleatoriaRegex = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-    return Pattern.matches(chaveAleatoriaRegex, this)
+    val text = this.removeAllFormatting()
+    return Pattern.matches("[a-zA-Z0-9]+", text)
 }

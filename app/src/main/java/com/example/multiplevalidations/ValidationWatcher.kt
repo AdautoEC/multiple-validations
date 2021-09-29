@@ -7,30 +7,28 @@ import android.widget.EditText
 import com.example.multiplevalidations.extension.*
 
 class ValidationWatcher(
-    private val edt: EditText,
-    private val onKeyChoosed: (Pair<String, PIXKey>) -> Unit
+    private val edt: EditText
 ) : TextWatcher {
     private var cleanText = ""
     private var textMasked = ""
+    var onKeyChoosed: ((Pair<String, PIXKey>) -> Unit)? = null
+    var oldKey: PIXKey = PIXKey.CHAVE_INVALIDA
 
-    override fun beforeTextChanged(text: CharSequence?, start: Int, count: Int, after: Int) {}
+    override fun beforeTextChanged(text: CharSequence?, start: Int, count: Int, after: Int) {
+    }
 
     override fun afterTextChanged(text: Editable?) {
         edt.removeTextChangedListener(this)
         text?.replace(0, text.length, textMasked)
-        edt.setSelection(text?.length ?: 0)
         edt.addTextChangedListener(this)
     }
 
     override fun onTextChanged(cs: CharSequence?, start: Int, before: Int, count: Int) {
         val text = cs.toString()
 
-        if (!text.hasOnlyNumbers()) {
-            textMasked = text
-            if (Patterns.EMAIL_ADDRESS.matcher(text).matches()) {
-                //  EMAIL VALIDO
-                emailValidation(text)
-            }
+        if (Patterns.EMAIL_ADDRESS.matcher(text).matches()) {
+            //  EMAIL VALIDO
+            emailValidation(text)
         } else {
             cleanText = text.removeAllFormatting()
             when (cleanText.length) {
@@ -51,12 +49,12 @@ class ValidationWatcher(
                         }
                         else -> {
                             //  CPF E CELULAR INVALIDOS
-                            chaveInvalidaValidation()
+                            chaveInvalidaValidation(text)
                         }
                     }
                 }
                 14 -> {
-                    cnpjValidation()
+                    cnpjValidation(text)
                 }
                 32 -> {
                     //  CHAVE ALEATORIA
@@ -64,55 +62,67 @@ class ValidationWatcher(
                 }
                 else -> {
                     //  "CHAVE INVALIDA"
-                    chaveInvalidaValidation()
+                    chaveInvalidaValidation(text)
                 }
             }
         }
     }
 
     private fun cpfAndCellphoneValidation() {
-        textMasked = cleanText
-        onKeyChoosed.invoke(Pair(textMasked, PIXKey.CPF_AND_CELULAR))
+        setMask(cleanText)
+        oldKey = PIXKey.CPF_AND_CELULAR
+        onKeyChoosed?.invoke(Pair(textMasked, PIXKey.CPF_AND_CELULAR))
     }
 
     private fun emailValidation(text: String) {
-        onKeyChoosed.invoke(Pair(text, PIXKey.EMAIL))
+        setMask(text)
+        oldKey = PIXKey.EMAIL
+        onKeyChoosed?.invoke(Pair(text, PIXKey.EMAIL))
     }
 
     private fun cpfValidation() {
         setMask(cleanText.toCPFMask())
-        onKeyChoosed.invoke(Pair(cleanText, PIXKey.CPF))
+        oldKey = PIXKey.CPF
+        onKeyChoosed?.invoke(Pair(cleanText, PIXKey.CPF))
     }
 
-    private fun cnpjValidation() {
+    private fun cnpjValidation(text: String) {
         if (cleanText.isValidCNPJ()) {
             setMask(cleanText.toCNPJMask())
-            onKeyChoosed.invoke(Pair(cleanText, PIXKey.CNPJ))
+            oldKey = PIXKey.CNPJ
+            onKeyChoosed?.invoke(Pair(cleanText, PIXKey.CNPJ))
         } else {
             //  "CNPJ INVALIDO"
-            onKeyChoosed.invoke(Pair("", PIXKey.CHAVE_INVALIDA))
+            chaveInvalidaValidation(text)
         }
     }
 
     private fun phoneValidation() {
         setMask(cleanText.toPhoneMask())
-        onKeyChoosed.invoke(Pair(cleanText, PIXKey.CELULAR))
+        oldKey = PIXKey.CELULAR
+        onKeyChoosed?.invoke(Pair(cleanText, PIXKey.CELULAR))
     }
 
-    private fun chaveAleatoriaValidation(text: String?) {
-        if (text.toString().isValidChaveAleatoria()) {
-            setMask(cleanText)
-            onKeyChoosed.invoke(Pair(cleanText, PIXKey.CHAVE_ALEATORIA))
+    private fun chaveAleatoriaValidation(text: String) {
+        if (text.isValidChaveAleatoria()) {
+            setMask(cleanText.toChaveAleatoria())
+            oldKey = PIXKey.CHAVE_ALEATORIA
+            onKeyChoosed?.invoke(Pair(cleanText, PIXKey.CHAVE_ALEATORIA))
         } else {
             //  "Chave aleatória invalida"
-            onKeyChoosed.invoke(Pair("", PIXKey.CHAVE_INVALIDA))
+            chaveInvalidaValidation(text)
         }
     }
 
-    private fun chaveInvalidaValidation() {
-        cleanText = cleanText.removeAllFormatting()
-        textMasked = cleanText
-        onKeyChoosed.invoke(Pair("", PIXKey.CHAVE_INVALIDA))
+    private fun chaveInvalidaValidation(text: String) {
+        cleanText = text.removeAllFormatting()
+        textMasked = if(oldKey != PIXKey.CHAVE_INVALIDA && oldKey != PIXKey.EMAIL){
+            cleanText
+        }else{
+            text
+        }
+        oldKey = PIXKey.CHAVE_INVALIDA
+        onKeyChoosed?.invoke(Pair("", PIXKey.CHAVE_INVALIDA))
     }
 
     private fun setMask(text: String) {
